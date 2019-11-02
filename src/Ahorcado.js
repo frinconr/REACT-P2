@@ -20,8 +20,9 @@ class Ahorcado extends React.Component{
                 intento: ''
             },
             intentos: [],
-            cantidadDeIntentosRestantes: 5,
-            palabra: 'palabra',
+            cantidadDeIntentosRestantes: 6,
+            mensajeFinal: '',
+            palabra: 'ala',
             imagenesAhorcado: [
                 ahorcado0,
                 ahorcado1,
@@ -37,6 +38,8 @@ class Ahorcado extends React.Component{
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.esAcierto = this.esAcierto.bind(this);
+        this.adivinoLaPalabra = this.adivinoLaPalabra.bind(this);
+        this.revisarEstadoDelJuego = this.revisarEstadoDelJuego.bind(this);
     }
 
     handleChange(e) {
@@ -50,35 +53,56 @@ class Ahorcado extends React.Component{
 
     handleSubmit(e) {
         e.preventDefault();
-        
-        var intentos = this.state.intentos;
-        var intento = this.state.fields.intento;
-        intentos.push(intento);
-
-        if(!this.esAcierto(intento)){
-            var intentosRestantes =  this.state.cantidadDeIntentosRestantes;
-            intentosRestantes--;
-
-            var indice = this.state.indiceImagenAhorcado;
-            indice++
-
-            this.setState({
-                cantidadDeIntentosRestantes: intentosRestantes,
-                indiceImagenAhorcado: indice
-            });           
-        }
-
-        this.setState({
-            fields: {
-                intento:''
-            },
-            intentos: intentos
-        });
+        this.revisarEstadoDelJuego();
     }
 
     esAcierto(letra){
         var esAcierto = this.state.palabra.includes(letra);
         return esAcierto;
+    }
+
+    adivinoLaPalabra(intentos){
+        var letras = this.state.palabra.split("");
+        var adivinoTodas = letras.every(l => {return intentos.includes(l)}); 
+
+        return adivinoTodas;
+    }
+
+    revisarEstadoDelJuego(){
+        
+        var intentosRestantes =  this.state.cantidadDeIntentosRestantes;
+        var indice = this.state.indiceImagenAhorcado;
+        var intentos = this.state.intentos;
+        var ultimoIntento = this.state.fields.intento;
+
+        intentos.push(ultimoIntento);
+
+        if(!this.esAcierto(ultimoIntento)){
+            intentosRestantes--;
+            indice++           
+        }
+
+        var mensajeFinal = '';
+
+        if(this.adivinoLaPalabra(intentos)){
+            mensajeFinal = 'Ganaste';
+        }
+        
+        if(intentosRestantes === 0){
+            mensajeFinal = 'Perdiste';
+        }
+        
+
+        this.setState({
+            fields:{
+                intento:''
+            },
+            intentos: intentos,
+            mensajeFinal: mensajeFinal,
+            cantidadDeIntentosRestantes: intentosRestantes,
+            indiceImagenAhorcado: indice
+        });
+
     }
 
     render(){
@@ -98,14 +122,15 @@ class Ahorcado extends React.Component{
                         Adivinar
                     </Button>
                 </form>
+                <div>{this.state.mensajeFinal}</div>
                 <h4>Intentos restantes: <span>{this.state.cantidadDeIntentosRestantes}</span></h4>
                 <Palabra palabra={this.state.palabra} visibles={this.state.intentos}></Palabra>
                 <ArregloDeCartas valoresDeCartas={this.state.intentos}></ArregloDeCartas>
                 <img 
                     src={this.state.imagenesAhorcado[this.state.indiceImagenAhorcado]} 
                     alt="Ahorcado" 
-                    width="500" 
-                    height="600">   
+                    width="300" 
+                    height="400">   
                 </img>
             </div>
 
