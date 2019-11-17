@@ -3,6 +3,8 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import ArregloDeCartas from './ArregloDeCartas'
 import Palabra from './Palabra'
+import ReplayIcon from '@material-ui/icons/Replay';
+import Grid from '@material-ui/core/Grid';
 
 const ahorcado0 = require('./media/Ahorcado-0.png');
 const ahorcado1 = require('./media/Ahorcado-1.png');
@@ -12,34 +14,51 @@ const ahorcado4 = require('./media/Ahorcado-4.png');
 const ahorcado5 = require('./media/Ahorcado-5.png');
 const ahorcado6 = require('./media/Ahorcado-6.png');
 
+const palabras = [
+    'hola',
+    'mundo',
+    'palabra',
+    'color',
+    'hoja',
+    'extravagante',
+    'ahorcados'
+]
+
+function getRandomWord(){
+    var i = Math.floor(Math.random() * palabras.length);
+    return palabras[i];
+}
+
+const imagenesAhorcado = [
+    ahorcado0,
+    ahorcado1,
+    ahorcado2,
+    ahorcado3,
+    ahorcado4,
+    ahorcado5,
+    ahorcado6
+]
+
 class Ahorcado extends React.Component{
     constructor(props){
         super(props);
         this.state = {
+            palabra: getRandomWord(),
             fields: {
                 intento: ''
             },
             intentos: [],
             cantidadDeIntentosRestantes: 6,
             mensajeFinal: '',
-            palabra: 'ala',
-            imagenesAhorcado: [
-                ahorcado0,
-                ahorcado1,
-                ahorcado2,
-                ahorcado3,
-                ahorcado4,
-                ahorcado5,
-                ahorcado6
-            ],
             indiceImagenAhorcado: 0
-        }
+        };
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.esAcierto = this.esAcierto.bind(this);
         this.adivinoLaPalabra = this.adivinoLaPalabra.bind(this);
         this.revisarEstadoDelJuego = this.revisarEstadoDelJuego.bind(this);
+        this.reiniciarJuego = this.reiniciarJuego.bind(this);
     }
 
     handleChange(e) {
@@ -85,11 +104,11 @@ class Ahorcado extends React.Component{
         var mensajeFinal = '';
 
         if(this.adivinoLaPalabra(intentos)){
-            mensajeFinal = 'Ganaste';
+            mensajeFinal = <h1><font color="green">Ganaste</font></h1>;
         }
         
         if(intentosRestantes === 0){
-            mensajeFinal = 'Perdiste';
+            mensajeFinal = <h1><font color="red">Perdiste</font></h1>;
         }
         
 
@@ -105,33 +124,65 @@ class Ahorcado extends React.Component{
 
     }
 
+    reiniciarJuego(){
+        this.setState({
+            palabra: getRandomWord(),
+            fields: {
+                intento: ''
+            },
+            intentos: [],
+            cantidadDeIntentosRestantes: 6,
+            mensajeFinal: '',
+            indiceImagenAhorcado: 0
+        });
+    }
+
     render(){
         return(
             <div>
-                <form onSubmit={this.handleSubmit}>
-                    <TextField
-                        id="intento"
-                        name="intento"
-                        label="Letra"
-                        value={this.state.fields.intento}
-                        margin="normal"
-                        onChange={this.handleChange}
-                    />
+                <Grid container spacing={3}>
+                    <Grid item xs={6}>
+                        <form onSubmit={this.handleSubmit}>
+                            <TextField
+                                id="intento"
+                                name="intento"
+                                label="Letra"
+                                value={this.state.fields.intento}
+                                margin="normal"
+                                inputProps={{ maxLength: 1 }}
+                                onChange={this.handleChange}
+                                disabled={this.state.cantidadDeIntentosRestantes === 0}
+                            />
 
-                    <Button variant="contained" color="primary" type="submit">
-                        Adivinar
-                    </Button>
-                </form>
+                            <Button variant="contained" color="primary" type="submit">
+                                Adivinar
+                            </Button>
+                        </form>
+                        <h2>Palabra: </h2>
+                        <Palabra palabra={this.state.palabra} visibles={this.state.intentos}></Palabra>
+                    </Grid>
+                    <Grid item xs={6}>
+                    <img 
+                        src={imagenesAhorcado[this.state.indiceImagenAhorcado]} 
+                        alt="Ahorcado" 
+                        width="300" 
+                        height="400">   
+                    </img>
+                    </Grid>
+                </Grid>
+
+                <Button
+                    variant="contained"
+                    color="secondary"
+                    startIcon={<ReplayIcon />}
+                    onClick={this.reiniciarJuego}                  
+                >
+                    Reiniciar juego
+                </Button>
                 <div>{this.state.mensajeFinal}</div>
                 <h4>Intentos restantes: <span>{this.state.cantidadDeIntentosRestantes}</span></h4>
-                <Palabra palabra={this.state.palabra} visibles={this.state.intentos}></Palabra>
                 <ArregloDeCartas valoresDeCartas={this.state.intentos}></ArregloDeCartas>
-                <img 
-                    src={this.state.imagenesAhorcado[this.state.indiceImagenAhorcado]} 
-                    alt="Ahorcado" 
-                    width="300" 
-                    height="400">   
-                </img>
+                
             </div>
 
         );
